@@ -29,6 +29,9 @@ def render_board(
         highlight = set()
 
     lines: list[str] = []
+    lines.append("  " + " ".join(str(c + 1) for c in range(COLS)))
+    lines.append(_BORDER)
+
     for row in range(ROWS - 1, -1, -1):
         cells: list[str] = []
         for col in range(COLS):
@@ -44,7 +47,6 @@ def render_board(
         lines.append("| " + " ".join(cells) + " |")
 
     lines.append(_BORDER)
-    lines.append("  " + " ".join(str(c + 1) for c in range(COLS)))
     return "\n".join(lines)
 
 
