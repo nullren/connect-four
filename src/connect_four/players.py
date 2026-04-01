@@ -9,6 +9,10 @@ class UndoRequested(Exception):
     """Raised by HumanPlayer when the user requests an undo."""
 
 
+class QuitRequested(Exception):
+    """Raised by HumanPlayer when the user requests to quit."""
+
+
 class BotPlayer:
     """Wraps a bot object and validates its moves."""
 
@@ -41,14 +45,16 @@ class HumanPlayer:
         display_cols = [c + 1 for c in valid]
         can_undo = len(game.moves) > 0
 
-        prompt = f"{self.name}, choose a column {display_cols}"
+        hints = ["'q' to quit"]
         if can_undo:
-            prompt += " (or 'u' to undo)"
-        prompt += ": "
+            hints.insert(0, "'u' to undo")
+        prompt = f"{self.name}, column {display_cols} ({', '.join(hints)}): "
 
         while True:
             try:
                 raw = input(prompt).strip().lower()
+                if raw in ("q", "quit"):
+                    raise QuitRequested
                 if raw in ("u", "undo"):
                     if can_undo:
                         raise UndoRequested
@@ -62,4 +68,4 @@ class HumanPlayer:
                 print("Please enter a number.")
             except EOFError:
                 print()
-                raise
+                raise QuitRequested from None
