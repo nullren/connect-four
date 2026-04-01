@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from connect_four.engine import ConnectFour
 
@@ -31,6 +31,7 @@ class BenchmarkResult:
 
     def print_summary(self) -> None:
         """Print a formatted summary of the benchmark results."""
+
         def pct(n: int) -> str:
             return f"{n / self.n_games * 100:.1f}%" if self.n_games else "0.0%"
 
@@ -46,7 +47,7 @@ class BenchmarkResult:
         print(f"Games played: {self.n_games}")
         print(f"{'=' * 50}")
 
-        print(f"\nOverall:")
+        print("\nOverall:")
         print(f"  {self.bot1_name} wins: {self.bot1_wins} ({pct(self.bot1_wins)})")
         print(f"  {self.bot2_name} wins: {self.bot2_wins} ({pct(self.bot2_wins)})")
         print(f"  Draws:           {self.draws} ({pct(self.draws)})")
@@ -61,13 +62,17 @@ class BenchmarkResult:
         print(f"  {self.bot1_name} wins: {self.bot1_wins_as_p2}")
         print(f"  Draws:           {self.draws_bot2_first}")
 
-        print(f"\nThink time:")
-        print(f"  {self.bot1_name}: {self.bot1_think_time:.3f}s total, "
-              f"{avg_ms(self.bot1_think_time, self.bot1_moves)} avg/move "
-              f"({self.bot1_moves} moves)")
-        print(f"  {self.bot2_name}: {self.bot2_think_time:.3f}s total, "
-              f"{avg_ms(self.bot2_think_time, self.bot2_moves)} avg/move "
-              f"({self.bot2_moves} moves)")
+        print("\nThink time:")
+        print(
+            f"  {self.bot1_name}: {self.bot1_think_time:.3f}s total, "
+            f"{avg_ms(self.bot1_think_time, self.bot1_moves)} avg/move "
+            f"({self.bot1_moves} moves)"
+        )
+        print(
+            f"  {self.bot2_name}: {self.bot2_think_time:.3f}s total, "
+            f"{avg_ms(self.bot2_think_time, self.bot2_moves)} avg/move "
+            f"({self.bot2_moves} moves)"
+        )
         print()
 
 

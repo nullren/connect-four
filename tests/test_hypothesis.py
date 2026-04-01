@@ -5,8 +5,7 @@ from __future__ import annotations
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from connect_four.engine import ConnectFour, MoveResult, build_board, ROWS, COLS
-
+from connect_four.engine import COLS, ROWS, ConnectFour, MoveResult, build_board
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -80,9 +79,7 @@ def test_gravity_no_floating_pieces(col_sequence: list[int]) -> None:
     for r in range(1, ROWS):
         for c in range(COLS):
             if board[r][c] != 0:
-                assert board[r - 1][c] != 0, (
-                    f"Floating piece at row={r}, col={c}"
-                )
+                assert board[r - 1][c] != 0, f"Floating piece at row={r}, col={c}"
 
 
 @given(st.lists(st.integers(min_value=0, max_value=6), max_size=42))

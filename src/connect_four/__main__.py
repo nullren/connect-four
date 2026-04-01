@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 import argparse
-import sys
 
-from connect_four.players import HumanPlayer, BotPlayer
 from connect_four.bots import get_registry
 from connect_four.bots.perfect import PerfectBot
+from connect_four.players import BotPlayer, HumanPlayer
 
 DIFFICULTIES = ["easy", "medium", "hard", "impossible"]
 
@@ -15,7 +14,7 @@ DIFFICULTIES = ["easy", "medium", "hard", "impossible"]
 # so new bots added to bots/ appear automatically.
 _BOT_REGISTRY = get_registry()
 BOT_TYPES = list(_BOT_REGISTRY.keys())
-PLAYER_TYPES = ["human"] + BOT_TYPES
+PLAYER_TYPES = ["human", *BOT_TYPES]
 
 
 def _parse_difficulty(value: str) -> int | str:
@@ -28,9 +27,7 @@ def _parse_difficulty(value: str) -> int | str:
             return n
     except ValueError:
         pass
-    raise argparse.ArgumentTypeError(
-        f"difficulty must be 0-3 or one of: {', '.join(DIFFICULTIES)}"
-    )
+    raise argparse.ArgumentTypeError(f"difficulty must be 0-3 or one of: {', '.join(DIFFICULTIES)}")
 
 
 def _make_bot_player(kind: str, difficulty: int | str, suffix: str = "") -> BotPlayer:
@@ -77,25 +74,55 @@ def main() -> None:
 
     # play subcommand
     play_parser = subparsers.add_parser("play", help="Play an interactive game")
-    play_parser.add_argument("--p1", default="human", choices=PLAYER_TYPES, metavar="TYPE",
-                             help="player 1 type (default: human)")
-    play_parser.add_argument("--p2", default="human", choices=PLAYER_TYPES, metavar="TYPE",
-                             help="player 2 type (default: human)")
-    play_parser.add_argument("--difficulty", default="impossible", type=_parse_difficulty, metavar="LEVEL",
-                             help="bot difficulty: easy/medium/hard/impossible or 0-3 (default: impossible)")
+    play_parser.add_argument(
+        "--p1",
+        default="human",
+        choices=PLAYER_TYPES,
+        metavar="TYPE",
+        help="player 1 type (default: human)",
+    )
+    play_parser.add_argument(
+        "--p2",
+        default="human",
+        choices=PLAYER_TYPES,
+        metavar="TYPE",
+        help="player 2 type (default: human)",
+    )
+    play_parser.add_argument(
+        "--difficulty",
+        default="impossible",
+        type=_parse_difficulty,
+        metavar="LEVEL",
+        help="bot difficulty: easy/medium/hard/impossible or 0-3 (default: impossible)",
+    )
 
     # benchmark subcommand
     bench_parser = subparsers.add_parser("benchmark", help="Run bot-vs-bot benchmark")
-    bench_parser.add_argument("--p1", default="perfect", choices=BOT_TYPES, metavar="TYPE",
-                              help="bot 1 type (default: perfect)")
-    bench_parser.add_argument("--p2", default="random", choices=BOT_TYPES, metavar="TYPE",
-                              help="bot 2 type (default: random)")
-    bench_parser.add_argument("--games", type=int, default=100, metavar="N",
-                              help="number of games to play (default: 100)")
-    bench_parser.add_argument("--difficulty", default="impossible", type=_parse_difficulty, metavar="LEVEL",
-                              help="bot difficulty: easy/medium/hard/impossible or 0-3 (default: impossible)")
-    bench_parser.add_argument("--verbose", action="store_true",
-                              help="print result of each game")
+    bench_parser.add_argument(
+        "--p1",
+        default="perfect",
+        choices=BOT_TYPES,
+        metavar="TYPE",
+        help="bot 1 type (default: perfect)",
+    )
+    bench_parser.add_argument(
+        "--p2",
+        default="random",
+        choices=BOT_TYPES,
+        metavar="TYPE",
+        help="bot 2 type (default: random)",
+    )
+    bench_parser.add_argument(
+        "--games", type=int, default=100, metavar="N", help="number of games to play (default: 100)"
+    )
+    bench_parser.add_argument(
+        "--difficulty",
+        default="impossible",
+        type=_parse_difficulty,
+        metavar="LEVEL",
+        help="bot difficulty: easy/medium/hard/impossible or 0-3 (default: impossible)",
+    )
+    bench_parser.add_argument("--verbose", action="store_true", help="print result of each game")
 
     args = parser.parse_args()
 
@@ -113,12 +140,14 @@ def main() -> None:
             player2.name = player2.name + " (2)"
 
         from connect_four.ui.terminal import TerminalUI
+
         TerminalUI(player1, player2).run()
 
     elif args.command == "benchmark":
         bot1, bot2 = _bot_pair(args.p1, args.p2, args.difficulty)
 
         from connect_four.ui.benchmark import BenchmarkUI
+
         BenchmarkUI(bot1, bot2).run(n_games=args.games, verbose=args.verbose)
 
 

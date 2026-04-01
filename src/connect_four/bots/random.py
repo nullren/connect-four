@@ -6,7 +6,7 @@ import random as _random
 from collections.abc import Sequence
 
 from connect_four.bots import register
-from connect_four.engine import build_board, ROWS, COLS
+from connect_four.engine import COLS, ROWS, build_board
 
 
 def _valid_moves(moves: Sequence[int]) -> list[int]:

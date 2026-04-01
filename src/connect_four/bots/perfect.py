@@ -22,8 +22,7 @@ class PerfectBot:
             key = difficulty.lower()
             if key not in DIFFICULTIES:
                 raise ValueError(
-                    f"Unknown difficulty {difficulty!r}. "
-                    f"Choose from: {', '.join(DIFFICULTIES)}"
+                    f"Unknown difficulty {difficulty!r}. Choose from: {', '.join(DIFFICULTIES)}"
                 )
             self._difficulty = DIFFICULTIES[key]
         else:
@@ -37,7 +36,9 @@ class PerfectBot:
 
     @property
     def description(self) -> str:
-        return "Perfect play via Rust solver (connect-four-ai). Supports easy/medium/hard/impossible."
+        return (
+            "Perfect play via Rust solver (connect-four-ai). Supports easy/medium/hard/impossible."  # noqa: E501
+        )
 
     def next_move(self, moves: Sequence[int]) -> int:
         try:
@@ -51,8 +52,7 @@ class PerfectBot:
         result = connect_four_rs.best_move(list(moves), self._difficulty)
         if result is None:
             raise RuntimeError(
-                "connect_four_rs.best_move returned None — "
-                "the game may already be over."
+                "connect_four_rs.best_move returned None — the game may already be over."
             )
         return result
 

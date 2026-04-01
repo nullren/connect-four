@@ -11,7 +11,7 @@ from connect_four.engine import ConnectFour
 
 
 class _MCTSNode:
-    __slots__ = ("moves", "parent", "children", "wins", "visits")
+    __slots__ = ("children", "moves", "parent", "visits", "wins")
 
     def __init__(self, moves: tuple[int, ...], parent: _MCTSNode | None) -> None:
         self.moves = moves
@@ -28,10 +28,7 @@ class _MCTSNode:
             return float("inf")
         if self.parent is None or self.parent.visits == 0:
             return float("inf")
-        return (
-            self.wins / self.visits
-            + c * math.sqrt(math.log(self.parent.visits) / self.visits)
-        )
+        return self.wins / self.visits + c * math.sqrt(math.log(self.parent.visits) / self.visits)
 
 
 class MCTSBot:

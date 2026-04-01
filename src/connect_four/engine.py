@@ -64,7 +64,7 @@ class MoveResult:
 
 
 def build_board(moves: Sequence[int]) -> Board:
-    """Derive a 6×7 board grid from a move sequence.
+    """Derive a 6x7 board grid from a move sequence.
 
     Returns an immutable tuple-of-tuples (row 0 = bottom).
     Cell values are 0 (empty), 1 (player 1), or 2 (player 2).
@@ -85,16 +85,14 @@ def build_board(moves: Sequence[int]) -> Board:
 
 # Direction vectors: (delta_row, delta_col)
 _DIRECTIONS: list[tuple[int, int]] = [
-    (0, 1),   # horizontal →
-    (1, 0),   # vertical ↑
-    (1, 1),   # diagonal /
+    (0, 1),  # horizontal →
+    (1, 0),  # vertical ↑
+    (1, 1),  # diagonal /
     (1, -1),  # diagonal \
 ]
 
 
-def _check_win(
-    board: Board, row: int, col: int, player: int
-) -> list[tuple[int, int]] | None:
+def _check_win(board: Board, row: int, col: int, player: int) -> list[tuple[int, int]] | None:
     """Check all four directions from *(row, col)* for a line of four.
 
     Returns the winning cells if found, otherwise *None*.
@@ -105,11 +103,7 @@ def _check_win(
             r, c = row, col
             if sign == 1:
                 r, c = row + dr, col + dc
-            while (
-                0 <= r < ROWS
-                and 0 <= c < COLS
-                and board[r][c] == player
-            ):
+            while 0 <= r < ROWS and 0 <= c < COLS and board[r][c] == player:
                 if sign == -1:
                     cells.insert(0, (r, c))
                 else:
@@ -144,7 +138,9 @@ class ConnectFour:
 
     # -- public API ---------------------------------------------------------
 
-    def play(self, col: int) -> MoveResult.Ongoing | MoveResult.Win | MoveResult.Draw | MoveResult.InvalidMove:
+    def play(
+        self, col: int
+    ) -> MoveResult.Ongoing | MoveResult.Win | MoveResult.Draw | MoveResult.InvalidMove:
         """Play *col* (0-based). Returns a :class:`MoveResult` variant."""
         if self.is_over:
             return MoveResult.InvalidMove(reason="game is already over")
@@ -194,7 +190,7 @@ class ConnectFour:
 
     @property
     def board(self) -> Board:
-        """Derived 6×7 immutable grid (row 0 = bottom). Values: 0, 1, 2."""
+        """Derived 6x7 immutable grid (row 0 = bottom). Values: 0, 1, 2."""
         return build_board(self._moves)
 
     @property

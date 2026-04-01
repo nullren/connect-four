@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import sys
 
+import pytest
+
 from connect_four.bots.first_available import FirstAvailableBot
-from connect_four.bots.random import RandomBot
 from connect_four.bots.perfect import PerfectBot
+from connect_four.bots.random import RandomBot
 
 
 class TestFirstAvailableBot:
@@ -24,7 +26,7 @@ class TestFirstAvailableBot:
 
 class TestRandomBot:
     def test_returns_valid_column(self) -> None:
-        from connect_four.engine import build_board, ROWS, COLS
+        from connect_four.engine import COLS
 
         bot = RandomBot()
         for _ in range(50):
@@ -32,7 +34,7 @@ class TestRandomBot:
             assert 0 <= col < COLS
 
     def test_returns_valid_column_with_moves(self) -> None:
-        from connect_four.engine import build_board, ROWS, COLS
+        from connect_four.engine import COLS
 
         bot = RandomBot()
         moves = [0, 0, 0, 0, 0, 0]  # col 0 full
@@ -48,26 +50,17 @@ class TestPerfectBot:
         monkeypatch.setitem(sys.modules, "connect_four_rs", None)
 
         bot = PerfectBot(difficulty=3)
-        try:
+        with pytest.raises(RuntimeError, match="connect_four_rs"):
             bot.next_move(())
-            assert False, "Expected RuntimeError"
-        except RuntimeError as exc:
-            assert "connect_four_rs" in str(exc)
 
     def test_difficulty_from_string(self) -> None:
         bot = PerfectBot(difficulty="easy")
         assert bot._difficulty == 0
 
     def test_invalid_difficulty_string(self) -> None:
-        try:
+        with pytest.raises(ValueError):
             PerfectBot(difficulty="super")
-            assert False, "Expected ValueError"
-        except ValueError:
-            pass
 
     def test_invalid_difficulty_int(self) -> None:
-        try:
+        with pytest.raises(ValueError):
             PerfectBot(difficulty=5)
-            assert False, "Expected ValueError"
-        except ValueError:
-            pass

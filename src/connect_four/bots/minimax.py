@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from connect_four.bots import register
-from connect_four.engine import Board, ConnectFour, ROWS, COLS
+from connect_four.engine import COLS, ROWS, Board, ConnectFour
 
 # Try center columns first — dramatically improves alpha-beta pruning.
 _COLUMN_ORDER = (3, 2, 4, 1, 5, 0, 6)
@@ -17,16 +17,22 @@ def _order_moves(valid: list[int]) -> list[int]:
 
 def _score_window(window: list[int], player: int) -> float:
     opponent = 3 - player
-    bot   = window.count(player)
-    opp   = window.count(opponent)
+    bot = window.count(player)
+    opp = window.count(opponent)
     empty = window.count(0)
 
-    if bot == 4:                    return  1000.0
-    if opp == 4:                    return -1000.0
-    if bot == 3 and empty == 1:     return    50.0
-    if bot == 2 and empty == 2:     return     5.0
-    if opp == 3 and empty == 1:     return   -80.0
-    if opp == 2 and empty == 2:     return    -5.0
+    if bot == 4:
+        return 1000.0
+    if opp == 4:
+        return -1000.0
+    if bot == 3 and empty == 1:
+        return 50.0
+    if bot == 2 and empty == 2:
+        return 5.0
+    if opp == 3 and empty == 1:
+        return -80.0
+    if opp == 2 and empty == 2:
+        return -5.0
     return 0.0
 
 
@@ -74,10 +80,10 @@ def _minimax(
     on game state during recursion."""
     if game.is_over:
         if game.winner == bot_player:
-            return 1000.0 + depth      # win sooner = better
+            return 1000.0 + depth  # win sooner = better
         if game.winner is not None:
-            return -1000.0 - depth     # lose later = less bad
-        return 0.0                     # draw
+            return -1000.0 - depth  # lose later = less bad
+        return 0.0  # draw
 
     if depth == 0:
         return _evaluate(game.board, bot_player)

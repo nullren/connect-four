@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+import pytest
+
 from connect_four.engine import ConnectFour
 from connect_four.players import BotPlayer
 
@@ -32,11 +34,8 @@ class TestBotPlayer:
     def test_raises_value_error_on_invalid_column(self) -> None:
         game = ConnectFour()
         player = BotPlayer(_BadBot())
-        try:
+        with pytest.raises(ValueError, match="99"):
             player.get_move(game)
-            assert False, "Expected ValueError"
-        except ValueError as exc:
-            assert "99" in str(exc)
 
     def test_raises_runtime_error_when_game_is_over(self) -> None:
         game = ConnectFour()
@@ -50,11 +49,8 @@ class TestBotPlayer:
         assert game.is_over
 
         player = BotPlayer(_GoodBot())
-        try:
+        with pytest.raises(RuntimeError, match=r"(?i)over"):
             player.get_move(game)
-            assert False, "Expected RuntimeError"
-        except RuntimeError as exc:
-            assert "over" in str(exc).lower()
 
     def test_name_defaults_to_bot_class_name(self) -> None:
         player = BotPlayer(_GoodBot())

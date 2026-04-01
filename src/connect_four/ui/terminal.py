@@ -5,14 +5,14 @@ from __future__ import annotations
 import sys
 import time
 
-from connect_four.engine import ConnectFour, MoveResult, ROWS, COLS
+from connect_four.engine import COLS, ROWS, ConnectFour, MoveResult
 from connect_four.players import HumanPlayer, QuitRequested, UndoRequested
 
-_RESET  = "\033[0m"
-_BOLD   = "\033[1m"
-_RED    = "\033[91m"
+_RESET = "\033[0m"
+_BOLD = "\033[1m"
+_RED = "\033[91m"
 _YELLOW = "\033[93m"
-_CYAN   = "\033[96m"
+_CYAN = "\033[96m"
 
 _cell = "───"
 _TOP = "┌" + "┬".join([_cell] * COLS) + "┐"
@@ -37,11 +37,11 @@ def render_board(
         for col in range(COLS):
             value = board[row][col]
             if (row, col) in highlight:
-                cells.append(f" {_CYAN}{_BOLD}\u25cf{_RESET} ")   # ● cyan
+                cells.append(f" {_CYAN}{_BOLD}\u25cf{_RESET} ")  # ● cyan
             elif value == 1:
-                cells.append(f" {_RED}\u25cf{_RESET} ")            # ● red
+                cells.append(f" {_RED}\u25cf{_RESET} ")  # ● red
             elif value == 2:
-                cells.append(f" {_YELLOW}\u25cf{_RESET} ")         # ● yellow
+                cells.append(f" {_YELLOW}\u25cf{_RESET} ")  # ● yellow
             else:
                 cells.append("   ")
         lines.append("│" + "│".join(cells) + "│")
@@ -59,7 +59,7 @@ class TerminalUI:
         self.players = {1: player1, 2: player2}
         self._board_lines = 0  # lines occupied by the last board render
         self._think_time: dict[int, float] = {1: 0.0, 2: 0.0}
-        self._move_count: dict[int, int]   = {1: 0,   2: 0}
+        self._move_count: dict[int, int] = {1: 0, 2: 0}
         self._summary_printed = False
 
     def _draw(self, board, highlight=None, *, erase_above: int = 0) -> None:
