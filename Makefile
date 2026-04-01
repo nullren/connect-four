@@ -1,4 +1,4 @@
-.PHONY: build run play benchmark docker-build docker-run docker-play docker-benchmark
+.PHONY: build run play benchmark docker-build docker-run docker-play docker-benchmark archive
 
 # Local
 build:
@@ -16,6 +16,9 @@ benchmark:
 
 test:
 	uv run pytest
+
+archive:
+	git archive --format=tar.gz --prefix=connect-four/ --output=connect-four.tar.gz HEAD
 
 # Docker
 docker-build:
