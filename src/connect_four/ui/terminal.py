@@ -14,23 +14,23 @@ _YELLOW = "\033[93m"
 _CYAN   = "\033[96m"
 _DIM    = "\033[2m"
 
-# Bottom border: +  one dash per cell plus gaps  +
-# Each cell is "| · " (4 chars), final cell closes with "|"
-# Border: "+---+---+---+---+---+---+---+"
-_BORDER = "+" + "+".join(["---"] * COLS) + "+"
+_cell = "───"
+_TOP = "┌" + "┬".join([_cell] * COLS) + "┐"
+_SEP = "├" + "┼".join([_cell] * COLS) + "┤"
+_BOT = "└" + "┴".join([_cell] * COLS) + "┘"
 
 
 def render_board(
     board: list[list[int]],
     highlight: set[tuple[int, int]] | None = None,
 ) -> str:
-    """Render the board with pipe borders and a middle-dot for empty cells."""
+    """Render the board using Unicode box-drawing characters."""
     if highlight is None:
         highlight = set()
 
     lines: list[str] = []
     lines.append("  " + "   ".join(str(c + 1) for c in range(COLS)))
-    lines.append(_BORDER)
+    lines.append(_TOP)
 
     for row in range(ROWS - 1, -1, -1):
         cells: list[str] = []
@@ -44,9 +44,11 @@ def render_board(
                 cells.append(f" {_YELLOW}\u25cf{_RESET} ")         # ● yellow
             else:
                 cells.append(f" {_DIM}\u00b7{_RESET} ")            # · middle dot
-        lines.append("|" + "|".join(cells) + "|")
+        lines.append("│" + "│".join(cells) + "│")
+        if row > 0:
+            lines.append(_SEP)
 
-    lines.append(_BORDER)
+    lines.append(_BOT)
     return "\n".join(lines)
 
 
