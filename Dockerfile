@@ -16,11 +16,17 @@ RUN mkdir -p src/connect_four_rs/src && \
     echo 'fn main() {}' > src/connect_four_rs/src/lib.rs && \
     cargo fetch
 
-# Copy full source and build a wheel with maturin
-COPY pyproject.toml uv.lock ./
-COPY src/ src/
+# Compile Rust extension (cached unless Rust source changes)
+COPY pyproject.toml ./
+COPY src/connect_four_rs/src/ src/connect_four_rs/src/
+RUN uv tool install maturin && \
+    mkdir -p src/connect_four && touch src/connect_four/__init__.py && \
+    maturin build --release --out /tmp/stub_wheels
 
-RUN uv tool install maturin && maturin build --release --out /wheels
+# Package final wheel with real Python source (fast — Rust already compiled above)
+COPY uv.lock ./
+COPY src/connect_four/ src/connect_four/
+RUN maturin build --release --out /wheels
 
 # Runtime stage: slim Python image, no Rust toolchain
 FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS runtime
