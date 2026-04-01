@@ -12,7 +12,6 @@ _BOLD   = "\033[1m"
 _RED    = "\033[91m"
 _YELLOW = "\033[93m"
 _CYAN   = "\033[96m"
-_DIM    = "\033[2m"
 
 _cell = "───"
 _TOP = "┌" + "┬".join([_cell] * COLS) + "┐"
