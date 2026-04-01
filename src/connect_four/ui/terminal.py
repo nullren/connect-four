@@ -15,9 +15,9 @@ _CYAN   = "\033[96m"
 _DIM    = "\033[2m"
 
 # Bottom border: +  one dash per cell plus gaps  +
-# Row content is "| · · · · · · · |" = 2 + (COLS*2-1) + 2 = COLS*2+3 visible chars
-# Dashes between the + signs: COLS*2+1
-_BORDER = "+" + "-" * (COLS * 2 + 1) + "+"
+# Each cell is "| · " (4 chars), final cell closes with "|"
+# Border: "+---+---+---+---+---+---+---+"
+_BORDER = "+" + "+".join(["---"] * COLS) + "+"
 
 
 def render_board(
@@ -29,7 +29,7 @@ def render_board(
         highlight = set()
 
     lines: list[str] = []
-    lines.append("  " + " ".join(str(c + 1) for c in range(COLS)))
+    lines.append("  " + "   ".join(str(c + 1) for c in range(COLS)))
     lines.append(_BORDER)
 
     for row in range(ROWS - 1, -1, -1):
@@ -37,14 +37,14 @@ def render_board(
         for col in range(COLS):
             value = board[row][col]
             if (row, col) in highlight:
-                cells.append(f"{_CYAN}{_BOLD}\u25cf{_RESET}")   # ● cyan
+                cells.append(f" {_CYAN}{_BOLD}\u25cf{_RESET} ")   # ● cyan
             elif value == 1:
-                cells.append(f"{_RED}\u25cf{_RESET}")            # ● red
+                cells.append(f" {_RED}\u25cf{_RESET} ")            # ● red
             elif value == 2:
-                cells.append(f"{_YELLOW}\u25cf{_RESET}")         # ● yellow
+                cells.append(f" {_YELLOW}\u25cf{_RESET} ")         # ● yellow
             else:
-                cells.append(f"{_DIM}\u00b7{_RESET}")            # · middle dot
-        lines.append("| " + " ".join(cells) + " |")
+                cells.append(f" {_DIM}\u00b7{_RESET} ")            # · middle dot
+        lines.append("|" + "|".join(cells) + "|")
 
     lines.append(_BORDER)
     return "\n".join(lines)
