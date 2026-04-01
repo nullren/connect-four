@@ -7,7 +7,7 @@ connect-four/
 ├── src/
 │   ├── connect_four/            # Python package
 │   │   ├── engine.py            # Pure game logic
-│   │   ├── players.py           # HumanPlayer, BotPlayer
+│   │   ├── players.py           # HumanPlayer, BotPlayer, UndoRequested, QuitRequested
 │   │   ├── bots/
 │   │   │   ├── __init__.py      # Bot protocol + auto-discovery registry
 │   │   │   ├── random.py
@@ -134,15 +134,43 @@ importable even without the compiled `.so`.
 
 ### Terminal UI
 
-ANSI-colored board render: red for Player 1, yellow for Player 2, cyan
-highlight for winning cells. Column numbers are 1-based in the UI, 0-based
-everywhere internally. The conversion happens at the `HumanPlayer` boundary.
+The board renders using Unicode box-drawing characters (`┌┬┐`, `├┼┤`, `└┴┘`)
+with a full grid of column dividers. Column numbers sit above the top border to
+suggest dropping pieces from above. Player 1 pieces are red, Player 2 yellow,
+winning cells cyan.
+
+The board redraws in-place using ANSI cursor-up (`\033[nF`) + clear-to-end
+(`\033[J`) rather than scrolling, so the display stays fixed on screen.
+
+Player input uses exception-based signalling:
+- `UndoRequested` — raised by `HumanPlayer` on `u`; caught by `TerminalUI`,
+  which undoes the last 2 moves so the human returns to their own turn
+- `QuitRequested` — raised on `q`, Ctrl-C, or Ctrl-D; caught at the top of
+  the run loop for a clean exit
+
+Think time is tracked per player with `time.perf_counter()` and printed as a
+summary when the game ends.
 
 ### Benchmark UI
 
 Alternates which bot goes first each game. Reports win/loss/draw broken down
 by who started. Tracks think time with `time.perf_counter()` around each
 `get_move()` call and prints total and average ms/move per bot.
+
+### Docker
+
+Multi-stage build with three distinct cached layers in the builder stage:
+
+1. **Rust dep fetch** — `cargo fetch` with a stub `lib.rs`; invalidated only
+   when `Cargo.lock` changes.
+2. **Rust compilation** — `maturin build --release` with a stub Python package;
+   invalidated only when Rust source changes.
+3. **Python packaging** — copies real Python source and re-runs
+   `maturin build`; cargo finds its `target/` cache intact and skips
+   recompilation, so this layer is fast.
+
+The runtime stage is a slim Python image with no Rust toolchain — just the
+pre-built wheel installed.
 
 ## Testing
 
