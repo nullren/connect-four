@@ -172,7 +172,7 @@ Multi-stage build with three distinct cached layers in the builder stage:
 The runtime stage is a slim Python image with no Rust toolchain — just the
 pre-built wheel installed.
 
-## Testing
+## Testing and Tooling
 
 - `test_engine.py` — unit tests for all `ConnectFour` and `MoveResult` behaviour
 - `test_players.py` — `BotPlayer` validation (invalid columns, game-over guard)
@@ -180,3 +180,7 @@ pre-built wheel installed.
 - `test_hypothesis.py` — 10 property-based tests via Hypothesis: gravity,
   piece counts, player alternation, only-last-mover-can-win, `valid_moves` ↔
   `is_over` consistency, play/undo invariants, and more
+
+Linting and formatting use **ruff** (`E, F, I, UP, B, SIM, RUF`; line length
+100; target Python 3.13), matching the project's reference codebase. Run via
+`make lint` / `make fmt`.
