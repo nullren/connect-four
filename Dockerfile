@@ -20,7 +20,7 @@ RUN mkdir -p src/connect_four_rs/src && \
 COPY pyproject.toml uv.lock ./
 COPY src/ src/
 
-RUN uv run maturin build --release --out /wheels
+RUN uv tool install maturin && maturin build --release --out /wheels
 
 # Runtime stage: slim Python image, no Rust toolchain
 FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS runtime
