@@ -1,0 +1,21 @@
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "connect-four"
+version = "0.1.0"
+requires-python = ">=3.13"
+
+[project.scripts]
+connect-four = "connect_four.__main__:main"
+
+[tool.maturin]
+python-source = "src"
+python-packages = ["connect_four"]
+manifest-path = "src/connect_four_rs/Cargo.toml"
+module-name = "connect_four_rs"
+features = ["pyo3/extension-module"]
+
+[dependency-groups]
+dev = ["pytest>=8.0", "pytest-cov>=5.0"]

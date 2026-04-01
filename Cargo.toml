@@ -1,0 +1,3 @@
+[workspace]
+members = ["src/connect_four_rs"]
+resolver = "2"
