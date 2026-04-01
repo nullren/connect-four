@@ -5,6 +5,10 @@ from __future__ import annotations
 from connect_four.engine import ConnectFour
 
 
+class UndoRequested(Exception):
+    """Raised by HumanPlayer when the user requests an undo."""
+
+
 class BotPlayer:
     """Wraps a bot object and validates its moves."""
 
@@ -34,19 +38,26 @@ class HumanPlayer:
 
     def get_move(self, game: ConnectFour) -> int:
         valid = game.valid_moves
-        # Display 1-based columns to the user
         display_cols = [c + 1 for c in valid]
+        can_undo = len(game.moves) > 0
+
+        prompt = f"{self.name}, choose a column {display_cols}"
+        if can_undo:
+            prompt += " (or 'u' to undo)"
+        prompt += ": "
 
         while True:
             try:
-                raw = input(
-                    f"{self.name}, choose a column {display_cols}: "
-                )
-                col_1based = int(raw)
-                col = col_1based - 1
+                raw = input(prompt).strip().lower()
+                if raw in ("u", "undo"):
+                    if can_undo:
+                        raise UndoRequested
+                    print("Nothing to undo.")
+                    continue
+                col = int(raw) - 1
                 if col in valid:
                     return col
-                print(f"Column {col_1based} is not available. Try again.")
+                print(f"Column {int(raw)} is not available. Try again.")
             except ValueError:
                 print("Please enter a number.")
             except EOFError:

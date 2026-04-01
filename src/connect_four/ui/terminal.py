@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from connect_four.engine import ConnectFour, MoveResult, ROWS, COLS
+from connect_four.players import UndoRequested
 
 _RESET = "\033[0m"
 _BOLD = "\033[1m"
@@ -52,16 +53,45 @@ class TerminalUI:
 
     def run(self) -> None:
         game = ConnectFour()
-        while not game.is_over:
-            print(render_board(game.board))
-            player = self.players[game.current_player]
-            col = player.get_move(game)
-            result = game.play(col)
-            match result:
-                case MoveResult.Win(player=p, cells=cells):
-                    print(render_board(game.board, highlight=set(cells)))
-                    winner_name = self.players[p].name
-                    print(f"{winner_name} wins!")
-                case MoveResult.Draw():
-                    print(render_board(game.board))
-                    print("Draw!")
+
+        while True:
+            if not game.is_over:
+                print(render_board(game.board))
+                player = self.players[game.current_player]
+                try:
+                    col = player.get_move(game)
+                except UndoRequested:
+                    _undo(game, count=2)
+                    continue
+
+                result = game.play(col)
+                match result:
+                    case MoveResult.Win(player=p, cells=cells):
+                        print(render_board(game.board, highlight=set(cells)))
+                        print(f"{self.players[p].name} wins!")
+                    case MoveResult.Draw():
+                        print(render_board(game.board))
+                        print("Draw!")
+                continue
+
+            # Game over — offer undo or quit.
+            try:
+                raw = input("'u' to undo, or Enter to quit: ").strip().lower()
+            except EOFError:
+                print()
+                break
+            if raw in ("u", "undo"):
+                _undo(game, count=2)
+            else:
+                break
+
+
+def _undo(game: ConnectFour, count: int) -> None:
+    undone = 0
+    for _ in range(count):
+        if not game.moves:
+            break
+        game.undo()
+        undone += 1
+    if undone == 0:
+        print("Nothing to undo.")
