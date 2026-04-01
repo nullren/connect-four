@@ -43,7 +43,7 @@ def render_board(
             elif value == 2:
                 cells.append(f" {_YELLOW}\u25cf{_RESET} ")         # ● yellow
             else:
-                cells.append(f" {_DIM}\u00b7{_RESET} ")            # · middle dot
+                cells.append("   ")
         lines.append("│" + "│".join(cells) + "│")
         if row > 0:
             lines.append(_SEP)
