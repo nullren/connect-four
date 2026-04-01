@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+import time
 
 from connect_four.engine import ConnectFour, MoveResult, ROWS, COLS
 from connect_four.players import HumanPlayer, QuitRequested, UndoRequested
@@ -57,6 +58,9 @@ class TerminalUI:
     def __init__(self, player1, player2) -> None:
         self.players = {1: player1, 2: player2}
         self._board_lines = 0  # lines occupied by the last board render
+        self._think_time: dict[int, float] = {1: 0.0, 2: 0.0}
+        self._move_count: dict[int, int]   = {1: 0,   2: 0}
+        self._summary_printed = False
 
     def _draw(self, board, highlight=None, *, erase_above: int = 0) -> None:
         """Print the board, erasing the previous render plus `erase_above` extra lines."""
@@ -79,7 +83,9 @@ class TerminalUI:
                     extra_erase = 0
 
                     player = self.players[game.current_player]
+                    p_num = int(game.current_player)
                     is_human = isinstance(player, HumanPlayer)
+                    t0 = time.perf_counter()
                     try:
                         col = player.get_move(game)
                     except UndoRequested:
@@ -89,6 +95,8 @@ class TerminalUI:
                     except QuitRequested:
                         print()
                         return
+                    self._think_time[p_num] += time.perf_counter() - t0
+                    self._move_count[p_num] += 1
 
                     result = game.play(col)
                     extra_erase = 1 if is_human else 0
@@ -106,16 +114,33 @@ class TerminalUI:
                             self._board_lines += 1
                     continue
 
-                # Game over — offer undo or quit.
+                # Game over — print think time summary once, then offer undo/quit.
+                if not self._summary_printed:
+                    self._print_think_time()
+                    self._summary_printed = True
+
                 raw = input("'u' to undo, 'q' to quit: ").strip().lower()
                 if raw in ("u", "undo"):
                     extra_erase = 1
+                    self._summary_printed = False
                     _undo(game, count=2)
                 else:
                     return
 
         except (KeyboardInterrupt, EOFError):
             print()
+
+    def _print_think_time(self) -> None:
+        def fmt(p: int) -> str:
+            t = self._think_time[p]
+            n = self._move_count[p]
+            avg = f"{t / n * 1000:.0f}ms avg/move" if n else "n/a"
+            return f"  {self.players[p].name}: {t:.2f}s total, {avg} ({n} moves)"
+
+        print("Think time:")
+        print(fmt(1))
+        print(fmt(2))
+        self._board_lines += 3  # account for these lines in next redraw
 
 
 def _undo(game: ConnectFour, count: int) -> None:
