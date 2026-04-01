@@ -1,4 +1,4 @@
-.PHONY: build run play benchmark docker-build docker-run docker-play docker-benchmark archive
+.PHONY: build run play benchmark docker-build docker-run docker-play docker-benchmark archive lint fmt
 
 # Local
 build:
@@ -16,6 +16,12 @@ benchmark:
 
 test:
 	uv run pytest
+
+lint:
+	uv run ruff check src/ tests/
+
+fmt:
+	uv run ruff format src/ tests/
 
 archive:
 	git archive --format=tar.gz --prefix=connect-four/ --output=connect-four.tar.gz HEAD
