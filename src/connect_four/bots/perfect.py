@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+from connect_four.bots import register
+
 DIFFICULTIES: dict[str, int] = {
     "easy": 0,
     "medium": 1,
@@ -29,6 +31,14 @@ class PerfectBot:
                 raise ValueError(f"Difficulty must be 0-3, got {difficulty}")
             self._difficulty = int(difficulty)
 
+    @property
+    def name(self) -> str:
+        return "perfect"
+
+    @property
+    def description(self) -> str:
+        return "Perfect play via Rust solver (connect-four-ai). Supports easy/medium/hard/impossible."
+
     def next_move(self, moves: Sequence[int]) -> int:
         try:
             import connect_four_rs  # lazy import
@@ -45,3 +55,6 @@ class PerfectBot:
                 "the game may already be over."
             )
         return result
+
+
+register(PerfectBot())

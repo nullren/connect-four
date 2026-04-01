@@ -10,7 +10,7 @@ class BotPlayer:
 
     def __init__(self, bot: object, name: str | None = None) -> None:
         self.bot = bot
-        self.name: str = name if name is not None else type(bot).__name__
+        self.name: str = name if name is not None else getattr(bot, "name", type(bot).__name__)
 
     def get_move(self, game: ConnectFour) -> int:
         if game.is_over:

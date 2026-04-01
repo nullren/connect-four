@@ -6,17 +6,16 @@ import argparse
 import sys
 
 from connect_four.players import HumanPlayer, BotPlayer
-from connect_four.bots import RandomBot, FirstAvailableBot, PerfectBot
+from connect_four.bots import get_registry
+from connect_four.bots.perfect import PerfectBot
 
-PLAYER_TYPES = ["human", "perfect", "random", "first"]
-BOT_TYPES = ["perfect", "random", "first"]
 DIFFICULTIES = ["easy", "medium", "hard", "impossible"]
 
-BOT_NAMES = {
-    "perfect": "Perfect",
-    "random": "Random",
-    "first": "First",
-}
+# Bot types and player types are derived from the registry at startup,
+# so new bots added to bots/ appear automatically.
+_BOT_REGISTRY = get_registry()
+BOT_TYPES = list(_BOT_REGISTRY.keys())
+PLAYER_TYPES = ["human"] + BOT_TYPES
 
 
 def _parse_difficulty(value: str) -> int | str:
@@ -34,29 +33,37 @@ def _parse_difficulty(value: str) -> int | str:
     )
 
 
-def _make_bot_player(kind: str, name: str, difficulty: int | str) -> BotPlayer:
-    match kind:
-        case "perfect":
-            return BotPlayer(PerfectBot(difficulty=difficulty), name=name)
-        case "random":
-            return BotPlayer(RandomBot(), name=name)
-        case "first":
-            return BotPlayer(FirstAvailableBot(), name=name)
+def _make_bot_player(kind: str, difficulty: int | str, suffix: str = "") -> BotPlayer:
+    """Instantiate a bot by registry name. PerfectBot gets the difficulty param."""
+    name = kind + suffix
+    if kind == "perfect":
+        return BotPlayer(PerfectBot(difficulty=difficulty), name=name)
+    bot = _BOT_REGISTRY[kind]
+    return BotPlayer(bot, name=name)
 
 
-def _make_player(kind: str, name: str, difficulty: int | str) -> HumanPlayer | BotPlayer:
+def _make_player(kind: str, difficulty: int | str) -> HumanPlayer | BotPlayer:
     if kind == "human":
-        return HumanPlayer(name=name)
-    return _make_bot_player(kind, name, difficulty)
+        return HumanPlayer(name="Human")
+    return _make_bot_player(kind, difficulty)
 
 
-def _bot_names(p1_type: str, p2_type: str) -> tuple[str, str]:
-    """Return names for two bots, disambiguating if they're the same type."""
-    n1 = BOT_NAMES[p1_type]
-    n2 = BOT_NAMES[p2_type]
-    if n1 == n2:
-        return f"{n1} (1)", f"{n2} (2)"
-    return n1, n2
+def _bot_pair(p1_type: str, p2_type: str, difficulty: int | str) -> tuple[BotPlayer, BotPlayer]:
+    """Create two bot players, disambiguating names when they're the same type."""
+    if p1_type == p2_type:
+        return (
+            _make_bot_player(p1_type, difficulty, suffix=" (1)"),
+            _make_bot_player(p2_type, difficulty, suffix=" (2)"),
+        )
+    return _make_bot_player(p1_type, difficulty), _make_bot_player(p2_type, difficulty)
+
+
+def _bots_epilog() -> str:
+    lines = ["available bots:"]
+    for name, bot in _BOT_REGISTRY.items():
+        lines.append(f"  {name:<16} {bot.description}")
+    lines += ["", "difficulty:  easy, medium, hard, impossible  (or 0-3)"]
+    return "\n".join(lines)
 
 
 def main() -> None:
@@ -64,10 +71,7 @@ def main() -> None:
         prog="connect-four",
         description="Connect Four — play interactively or benchmark bots",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=(
-            "player types:  human, perfect, random, first\n"
-            "difficulty:    easy, medium, hard, impossible  (or 0-3)\n"
-        ),
+        epilog=_bots_epilog(),
     )
     subparsers = parser.add_subparsers(dest="command")
 
@@ -100,22 +104,19 @@ def main() -> None:
         p2_type = getattr(args, "p2", "human")
         difficulty = getattr(args, "difficulty", "impossible")
 
-        # Human players get "Player 1" / "Player 2"; bots get their strategy name
-        p1_name = "Player 1" if p1_type == "human" else BOT_NAMES[p1_type]
-        p2_name = "Player 2" if p2_type == "human" else BOT_NAMES[p2_type]
-        if p1_name == p2_name:
-            p1_name, p2_name = f"{p1_name} (1)", f"{p2_name} (2)"
+        player1 = _make_player(p1_type, difficulty)
+        player2 = _make_player(p2_type, difficulty)
 
-        player1 = _make_player(p1_type, p1_name, difficulty)
-        player2 = _make_player(p2_type, p2_name, difficulty)
+        # Disambiguate if two bots have the same name
+        if player1.name == player2.name:
+            player1.name = player1.name + " (1)"
+            player2.name = player2.name + " (2)"
 
         from connect_four.ui.terminal import TerminalUI
         TerminalUI(player1, player2).run()
 
     elif args.command == "benchmark":
-        name1, name2 = _bot_names(args.p1, args.p2)
-        bot1 = _make_bot_player(args.p1, name1, args.difficulty)
-        bot2 = _make_bot_player(args.p2, name2, args.difficulty)
+        bot1, bot2 = _bot_pair(args.p1, args.p2, args.difficulty)
 
         from connect_four.ui.benchmark import BenchmarkUI
         BenchmarkUI(bot1, bot2).run(n_games=args.games, verbose=args.verbose)
